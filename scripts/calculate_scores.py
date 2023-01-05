@@ -36,7 +36,7 @@ def calculate_score(suffix=""):
     df["target_type"] = df["target_type"].str.capitalize()
 
     # Keep only non-default scores
-    df = df[df["temperature_results"] < 1]
+    # df = df[df["temperature_results"] < 1]
 
     columns = ["company_name", "company_id"]
     columns = columns + [col for col in df.columns if col not in columns]

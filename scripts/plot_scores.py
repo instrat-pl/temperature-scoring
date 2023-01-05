@@ -91,7 +91,7 @@ def plot_temperature_scores(suffix=""):
     df = df.sort_index(key=lambda x: x.str.lower())
 
     # Sort columns first by scope, then by time frame
-    scopes = ["S1+S2", "S1+S2+S3", "S3"]
+    scopes = ["S1+S2", "S3", "S1+S2+S3"]
     time_frames = ["Short", "Mid", "Long"]
     columns = [" ".join(p) for p in product(scopes, time_frames)]
     df = df[[col for col in columns if col in df.columns]]
