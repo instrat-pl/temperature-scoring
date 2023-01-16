@@ -48,14 +48,6 @@ if __name__ == "__main__":
     df["base_year_ghg_s3"] = pd.NaT
     dfs["target_data"] = df[columns]
 
-    # Fill GHG emissions in fundamental data
-    df = dfs["fundamental_data"]
-    # Assume equal emissions for S1+S2 and S3
-    # TODO: Use actual data
-    df["ghg_s1s2"] = 0.5
-    df["ghg_s3"] = 0.5
-    dfs["fundamental_data"] = df
-
     companies = dfs["target_data"]["company_id"].drop_duplicates()
     for key in ["fundamental_data", "portfolio_data"]:
         df = dfs[key]

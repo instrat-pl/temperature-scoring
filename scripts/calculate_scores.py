@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 import SBTi
 from SBTi.data.excel import ExcelProvider
@@ -41,6 +42,38 @@ def calculate_score(suffix=""):
     columns = ["company_name", "company_id"]
     columns = columns + [col for col in df.columns if col not in columns]
     df = df[columns]
+
+    # Revise S1+S2+S3 scores if GHG emissions data are missing
+    df["scope"] = df["scope"].astype(str)
+    df_revised = (
+        df[
+            [
+                "company_id",
+                "time_frame",
+                "ghg_s1s2",
+                "ghg_s3",
+                "scope",
+                "temperature_score",
+            ]
+        ]
+        .pivot(
+            index=["company_id", "time_frame", "ghg_s1s2", "ghg_s3"],
+            columns="scope",
+            values="temperature_score",
+        )
+        .reset_index()
+    )
+    missing_ghg = df_revised["ghg_s1s2"].isna() | df_revised["ghg_s3"].isna()
+    df_revised.loc[missing_ghg, "S1S2S3"] = df_revised.loc[
+        missing_ghg, ["S1S2", "S3"]
+    ].max(axis=1)
+    df_revised = df_revised.melt(
+        id_vars=["company_id", "time_frame"],
+        value_vars=["S1S2", "S3", "S1S2S3"],
+        var_name="scope",
+        value_name="revised_temperature_score",
+    )
+    df = df.merge(df_revised, on=["company_id", "time_frame", "scope"], how="left")
 
     df.to_excel(output_file, index=False)
 

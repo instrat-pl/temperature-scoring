@@ -81,7 +81,10 @@ def plot_temperature_scores(suffix=""):
     df["scope"] = df["scope"].replace({"S1S2": "S1+S2", "S1S2S3": "S1+S2+S3"})
     df["Scope and Time Frame"] = df["scope"] + " " + df["time_frame"]
     df = df.rename(
-        columns={"company_name": "Company", "temperature_score": "Temperature Score"}
+        columns={
+            "company_name": "Company",
+            "revised_temperature_score": "Temperature Score",
+        }
     )
     df = df.pivot(
         index="Company", columns="Scope and Time Frame", values="Temperature Score"
