@@ -12,7 +12,9 @@ from SBTi.interfaces import ETimeFrames, EScope
 from temperature_scoring.config import data_dir
 
 
-def calculate_score(suffix=""):
+def calculate_score(
+    suffix="", revised_combined_score=False, aggregation_methods=["WATS"]
+):
     input_file = data_dir("clean", f"input_data{suffix}.xlsx")
     output_file = data_dir("clean", f"output_data{suffix}.xlsx")
 
@@ -25,9 +27,8 @@ def calculate_score(suffix=""):
     )
 
     data_provider = ExcelProvider(input_file)
-    portfolio = SBTi.utils.dataframe_to_portfolio(
-        pd.read_excel(input_file, sheet_name="portfolio_data")
-    )
+    df_portfolio = pd.read_excel(input_file, sheet_name="portfolio_data")
+    portfolio = SBTi.utils.dataframe_to_portfolio(df_portfolio)
 
     df = temperature_score.calculate(
         data_providers=[data_provider],
@@ -44,41 +45,70 @@ def calculate_score(suffix=""):
     df = df[columns]
 
     # Revise S1+S2+S3 scores if GHG emissions data are missing
-    df["scope"] = df["scope"].astype(str)
-    df_revised = (
-        df[
-            [
-                "company_id",
-                "time_frame",
-                "ghg_s1s2",
-                "ghg_s3",
-                "scope",
-                "temperature_score",
+    if revised_combined_score:
+        df["scope"] = df["scope"].astype(str)
+        df_revised = (
+            df[
+                [
+                    "company_id",
+                    "time_frame",
+                    "ghg_s1s2",
+                    "ghg_s3",
+                    "scope",
+                    "temperature_score",
+                ]
             ]
-        ]
-        .pivot(
-            index=["company_id", "time_frame", "ghg_s1s2", "ghg_s3"],
-            columns="scope",
-            values="temperature_score",
+            .pivot(
+                index=["company_id", "time_frame", "ghg_s1s2", "ghg_s3"],
+                columns="scope",
+                values="temperature_score",
+            )
+            .reset_index()
         )
-        .reset_index()
-    )
-    missing_ghg = df_revised["ghg_s1s2"].isna() | df_revised["ghg_s3"].isna()
-    df_revised.loc[missing_ghg, "S1S2S3"] = df_revised.loc[
-        missing_ghg, ["S1S2", "S3"]
-    ].max(axis=1)
-    df_revised = df_revised.melt(
-        id_vars=["company_id", "time_frame"],
-        value_vars=["S1S2", "S3", "S1S2S3"],
-        var_name="scope",
-        value_name="revised_temperature_score",
-    )
-    df = df.merge(df_revised, on=["company_id", "time_frame", "scope"], how="left")
+        missing_ghg = df_revised["ghg_s1s2"].isna() | df_revised["ghg_s3"].isna()
+        df_revised.loc[missing_ghg, "S1S2S3"] = df_revised.loc[
+            missing_ghg, ["S1S2", "S3"]
+        ].max(axis=1)
+        df_revised = df_revised.melt(
+            id_vars=["company_id", "time_frame"],
+            value_vars=["S1S2", "S3", "S1S2S3"],
+            var_name="scope",
+            value_name="revised_temperature_score",
+        )
+        df = df.merge(df_revised, on=["company_id", "time_frame", "scope"], how="left")
+        df["scope"] = df["scope"].replace(
+            {"S1S2": EScope.S1S2, "S3": EScope.S3, "S1S2S3": EScope.S1S2S3}
+        )
 
     df.to_excel(output_file, index=False)
+
+    # Aggregate scores
+    if revised_combined_score:
+        df["temperature_score"] = df["revised_temperature_score"].fillna(
+            df["temperature_score"]
+        )
+    for method in aggregation_methods:
+        # aggregate by assets
+        temperature_score.aggregation_method = {
+            "WATS": PortfolioAggregationMethod.WATS,
+            "AOTS": PortfolioAggregationMethod.AOTS,
+            "ROTS": PortfolioAggregationMethod.ROTS,
+        }[method]
+        # aggregate by revenues
+        aggregated_scores = temperature_score.aggregate_scores(df)
+        df_agg = pd.DataFrame(aggregated_scores.dict()).applymap(
+            lambda x: round(x["all"]["score"], 2)
+        )
+        df_agg.index.name = "scope"
+        df_agg.to_csv(data_dir("clean", f"portfolio_scores{suffix}_{method}.csv"))
 
 
 if __name__ == "__main__":
 
-    calculate_score()
     calculate_score("_example")
+    calculate_score("", revised_combined_score=True)
+    calculate_score(
+        "_with_estimates",
+        revised_combined_score=False,
+        aggregation_methods=["WATS", "AOTS", "ROTS"],
+    )

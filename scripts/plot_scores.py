@@ -70,7 +70,9 @@ def plot_heatmap(df):
     return fig
 
 
-def plot_temperature_scores(suffix=""):
+def plot_temperature_scores(
+    suffix="", use_revised_scores=False, aggregation_methods=["WATS"]
+):
     output_file = data_dir("clean", f"output_data{suffix}.xlsx")
     plot_file = plots_dir(f"temperature_scores{suffix}.png")
     plot_data_file = plots_dir(f"temperature_scores{suffix}.csv")
@@ -83,7 +85,9 @@ def plot_temperature_scores(suffix=""):
     df = df.rename(
         columns={
             "company_name": "Company",
-            "revised_temperature_score": "Temperature Score",
+            "temperature_score"
+            if not use_revised_scores
+            else "revised_temperature_score": "Temperature Score",
         }
     )
     df = df.pivot(
@@ -99,6 +103,24 @@ def plot_temperature_scores(suffix=""):
     columns = [" ".join(p) for p in product(scopes, time_frames)]
     df = df[[col for col in columns if col in df.columns]]
 
+    for method in aggregation_methods:
+        df_agg = pd.read_csv(
+            data_dir("clean", f"portfolio_scores{suffix}_{method}.csv")
+        )
+        df_agg["scope"] = df_agg["scope"].replace(
+            {"S1S2": "S1+S2", "S1S2S3": "S1+S2+S3"}
+        )
+        df_agg = df_agg.melt(
+            id_vars="scope", var_name="time_frame", value_name="Temperature Score"
+        )
+        df_agg["time_frame"] = df_agg["time_frame"].str.capitalize()
+        df_agg["Scope and Time Frame"] = df_agg["scope"] + " " + df_agg["time_frame"]
+        df_agg["Company"] = method
+        df_agg = df_agg.pivot(
+            index="Company", columns="Scope and Time Frame", values="Temperature Score"
+        )
+        df = pd.concat([df, df_agg])
+
     df.to_csv(plot_data_file)
     fig = plot_heatmap(df)
 
@@ -109,5 +131,6 @@ if __name__ == "__main__":
 
     os.makedirs(plots_dir(), exist_ok=True)
 
-    plot_temperature_scores()
+    plot_temperature_scores(use_revised_scores=True, aggregation_methods=["WATS"])
+    plot_temperature_scores("_with_estimates", aggregation_methods=["WATS", "AOTS", "ROTS"])
     plot_temperature_scores("_example")
