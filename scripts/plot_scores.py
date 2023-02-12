@@ -71,7 +71,7 @@ def plot_heatmap(df):
 
 
 def plot_temperature_scores(
-    suffix="", use_revised_scores=False, aggregation_methods=["WATS"]
+    suffix="", use_revised_scores=False, aggregation_methods=["Average"]
 ):
     output_file = data_dir("clean", f"output_data{suffix}.xlsx")
     plot_file = plots_dir(f"temperature_scores{suffix}.png")
@@ -131,6 +131,6 @@ if __name__ == "__main__":
 
     os.makedirs(plots_dir(), exist_ok=True)
 
-    plot_temperature_scores(use_revised_scores=True, aggregation_methods=["WATS"])
-    plot_temperature_scores("_with_estimates", aggregation_methods=["WATS", "AOTS", "ROTS"])
+    plot_temperature_scores(use_revised_scores=True, aggregation_methods=["Average"])
+    plot_temperature_scores("_with_estimates", aggregation_methods=["Average", "Emissions", "Revenue", "Market Cap"])
     plot_temperature_scores("_example")

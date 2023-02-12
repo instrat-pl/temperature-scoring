@@ -41,12 +41,15 @@ def clean_input_data(raw_file, clean_file, use_estimates=False):
         df = df.drop(columns=ghg_col).merge(
             df_ghg, on=["company_id", "base_year"], how="left"
         )
+    df = df.drop_duplicates()
     dfs["target_data"] = df[columns]
 
     # Use estimates in fundamental data
     if use_estimates:
         df = dfs["fundamental_data"]
-        df["ghg_s3"] = df["ghg_s3"].fillna(df["base_year_ghg_s3"]).fillna(df["ghg_s3_estimate"])
+        df["ghg_s3"] = (
+            df["ghg_s3"].fillna(df["base_year_ghg_s3"]).fillna(df["ghg_s3_estimate"])
+        )
         dfs["fundamental_data"] = df
 
     # Assume equal investment of 1 USD

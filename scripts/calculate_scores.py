@@ -13,7 +13,9 @@ from temperature_scoring.config import data_dir
 
 
 def calculate_score(
-    suffix="", revised_combined_score=False, aggregation_methods=["WATS"]
+    suffix="",
+    revised_combined_score=False,
+    aggregation_methods=["Average"],
 ):
     input_file = data_dir("clean", f"input_data{suffix}.xlsx")
     output_file = data_dir("clean", f"output_data{suffix}.xlsx")
@@ -27,80 +29,96 @@ def calculate_score(
     )
 
     data_provider = ExcelProvider(input_file)
-    df_portfolio = pd.read_excel(input_file, sheet_name="portfolio_data")
-    portfolio = SBTi.utils.dataframe_to_portfolio(df_portfolio)
 
-    df = temperature_score.calculate(
-        data_providers=[data_provider],
-        portfolio=portfolio,
+    df_portfolio = pd.read_excel(input_file, sheet_name="portfolio_data")
+    df_fundamental_data = pd.read_excel(input_file, sheet_name="fundamental_data")
+    df_portfolio = df_portfolio.merge(
+        df_fundamental_data.drop(columns="company_name"), on="company_id", how="left"
     )
 
-    df["target_type"] = df["target_type"].str.capitalize()
+    for aggregation_method in aggregation_methods:
 
-    # Keep only non-default scores
-    # df = df[df["temperature_results"] < 1]
+        if aggregation_method == "Average":
+            df_portfolio["investment_value"] = 1
+        elif aggregation_method == "Emissions":
+            df_portfolio["investment_value"] = df_portfolio["ghg_s1s2"]
+        elif aggregation_method == "Market Cap":
+            df_portfolio["investment_value"] = df_portfolio["company_market_cap"]
+        elif aggregation_method == "Revenue":
+            df_portfolio["investment_value"] = df_portfolio["company_revenue"]
 
-    columns = ["company_name", "company_id"]
-    columns = columns + [col for col in df.columns if col not in columns]
-    df = df[columns]
+        portfolio = SBTi.utils.dataframe_to_portfolio(df_portfolio)
 
-    # Revise S1+S2+S3 scores if GHG emissions data are missing
-    if revised_combined_score:
-        df["scope"] = df["scope"].astype(str)
-        df_revised = (
-            df[
-                [
-                    "company_id",
-                    "time_frame",
-                    "ghg_s1s2",
-                    "ghg_s3",
-                    "scope",
-                    "temperature_score",
+        df = temperature_score.calculate(
+            data_providers=[data_provider],
+            portfolio=portfolio,
+        )
+
+        df["target_type"] = df["target_type"].str.capitalize()
+
+        # Keep only non-default scores
+        # df = df[df["temperature_results"] < 1]
+
+        columns = ["company_name", "company_id"]
+        columns = columns + [col for col in df.columns if col not in columns]
+        df = df[columns]
+
+        # Revise S1+S2+S3 scores if GHG emissions data are missing
+        if revised_combined_score:
+            df["scope"] = df["scope"].astype(str)
+            df_revised = (
+                df[
+                    [
+                        "company_id",
+                        "time_frame",
+                        "ghg_s1s2",
+                        "ghg_s3",
+                        "scope",
+                        "temperature_score",
+                    ]
                 ]
-            ]
-            .pivot(
-                index=["company_id", "time_frame", "ghg_s1s2", "ghg_s3"],
-                columns="scope",
-                values="temperature_score",
+                .pivot(
+                    index=["company_id", "time_frame", "ghg_s1s2", "ghg_s3"],
+                    columns="scope",
+                    values="temperature_score",
+                )
+                .reset_index()
             )
-            .reset_index()
-        )
-        missing_ghg = df_revised["ghg_s1s2"].isna() | df_revised["ghg_s3"].isna()
-        df_revised.loc[missing_ghg, "S1S2S3"] = df_revised.loc[
-            missing_ghg, ["S1S2", "S3"]
-        ].max(axis=1)
-        df_revised = df_revised.melt(
-            id_vars=["company_id", "time_frame"],
-            value_vars=["S1S2", "S3", "S1S2S3"],
-            var_name="scope",
-            value_name="revised_temperature_score",
-        )
-        df = df.merge(df_revised, on=["company_id", "time_frame", "scope"], how="left")
-        df["scope"] = df["scope"].replace(
-            {"S1S2": EScope.S1S2, "S3": EScope.S3, "S1S2S3": EScope.S1S2S3}
-        )
+            missing_ghg = df_revised["ghg_s1s2"].isna() | df_revised["ghg_s3"].isna()
+            df_revised.loc[missing_ghg, "S1S2S3"] = df_revised.loc[
+                missing_ghg, ["S1S2", "S3"]
+            ].max(axis=1)
+            df_revised = df_revised.melt(
+                id_vars=["company_id", "time_frame"],
+                value_vars=["S1S2", "S3", "S1S2S3"],
+                var_name="scope",
+                value_name="revised_temperature_score",
+            )
+            df = df.merge(
+                df_revised, on=["company_id", "time_frame", "scope"], how="left"
+            )
+            df["scope"] = df["scope"].replace(
+                {"S1S2": EScope.S1S2, "S3": EScope.S3, "S1S2S3": EScope.S1S2S3}
+            )
+        if aggregation_method == aggregation_methods[0]:
+            # Save individual scores only once
+            df.to_excel(output_file, index=False)
 
-    df.to_excel(output_file, index=False)
-
-    # Aggregate scores
-    if revised_combined_score:
-        df["temperature_score"] = df["revised_temperature_score"].fillna(
-            df["temperature_score"]
-        )
-    for method in aggregation_methods:
-        # aggregate by assets
-        temperature_score.aggregation_method = {
-            "WATS": PortfolioAggregationMethod.WATS,
-            "AOTS": PortfolioAggregationMethod.AOTS,
-            "ROTS": PortfolioAggregationMethod.ROTS,
-        }[method]
+        # Aggregate scores
+        if revised_combined_score:
+            df["temperature_score"] = df["revised_temperature_score"].fillna(
+                df["temperature_score"]
+            )
+        temperature_score.aggregation_method = PortfolioAggregationMethod.WATS
         # aggregate by revenues
         aggregated_scores = temperature_score.aggregate_scores(df)
         df_agg = pd.DataFrame(aggregated_scores.dict()).applymap(
             lambda x: round(x["all"]["score"], 2)
         )
         df_agg.index.name = "scope"
-        df_agg.to_csv(data_dir("clean", f"portfolio_scores{suffix}_{method}.csv"))
+        df_agg.to_csv(
+            data_dir("clean", f"portfolio_scores{suffix}_{aggregation_method}.csv")
+        )
 
 
 if __name__ == "__main__":
@@ -110,5 +128,5 @@ if __name__ == "__main__":
     calculate_score(
         "_with_estimates",
         revised_combined_score=False,
-        aggregation_methods=["WATS", "AOTS", "ROTS"],
+        aggregation_methods=["Average", "Emissions", "Revenue", "Market Cap"],
     )
