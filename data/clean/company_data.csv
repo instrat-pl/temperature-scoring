@@ -1,0 +1,101 @@
+company_name,company_code,ISIN,sector
+Allegro,ALLEGRO,LU2237380790,Handel internetowy
+BNP Paribas,BNPPPL,PLBGZ0000010,Banki komercyjne
+CCC,CCC,PLCCC0000016,Odzież i obuwie
+Ciech,CIECH,PLCIECH00018,Chemia podstawowa
+CitiBank Handlowy,HANDLOWY,PLBH00000012,Banki komercyjne
+Enea,ENEA,PLENEA000013,Energetyka
+Eurocash,EUROCASH,PLEURCH00011,Artykuły codziennego użytku
+GPW,GPW,PLGPW0000017,Giełdy i biura maklerskie
+Grenevia/Famur,FAMUR,PLFAMUR00012,Urządzenia mechaniczne
+Grupa Azoty,GRUPAAZOTY,PLZATRM00012,Chemia podstawowa
+Grupa Kęty,KETY,PLKETY000011,Hutnictwo metali nieżelaznych
+ING,INGBSK,PLBSK0000017,Banki komercyjne
+JSW,JSW,PLJSW0000015,Górnictwo węgla
+KGHM,KGHM,PLKGHM000017,Górnictwo metali
+Millenium Bank,MILLENNIUM,PLBIG0000016,Banki komercyjne
+Orange,ORANGEPL,PLTLKPL00017,Telekomunikacja
+PGE,PGE,PLPGER000010,Energetyka
+PKN Orlen,PKNORLEN,PLPKN0000018,Wydobycie i produkcja
+PKO BP,PKOBP,PLPKO0000016,Banki komercyjne
+PZU,PZU,PLPZU0000011,Firmy ubezpieczeniowe
+Pekao,PEKAO,PLPEKAO00016,Banki komercyjne
+Santander,SANPL,PLBZ00000044,Banki komercyjne
+Tauron,TAURONPE,PLTAURN00011,Energetyka
+Wirtualna Polska,WIRTUALNA,PLWRTPL00027,Portale internetowe
+mBank,MBANK,PLBRE0000012,Banki komercyjne
+,11BIT,PL11BTS00015,Gry
+,ABPL,PLAB00000019,Komputery i elektronika
+,ACAUTOGAZ,PLACSA000014,części samochodowe
+,ALIOR,PLALIOR00045,Banki komercyjne
+,ALUMETAL,PLALMTL00023,Hutnictwo metali nieżelaznych
+,AMICA,PLAMICA00010,Sprzęt elektryczny i elektroniczny
+,AMREST,ES0105375002,Hotele i restauracje
+,APATOR,PLAPATR00018,urządzenia elektryczne
+,ARCTIC,PLARTPR00012,Papier i opakowania
+,ASBIS,CY1000031710,Komputery i elektronika
+,ASSECOPOL,PLSOFTB00016,Oprogramowanie
+,ASSECOSEE,PLASSEE00014,Oprogramowanie
+,ATAL,PLATAL000046,Sprzedaż nieruchomości
+,AUTOPARTN,PLATPRT00018,Części samochodowe
+,BENEFIT,PLBNFTS00018,rekreacja i wypoczynek - pozostałe
+,BIOMEDLUB,PLBMDLB00018,Produkcja leków
+,BOGDANKA,PLLWBGD00016,Górnictwo węgla
+,BUDIMEX,PLBUDMX00013,budownictwo ogólne
+,BUMECH,PLBMECH00012,Urządzenia mechaniczne
+,CAPTORTX,PLCPTRT00014,Biotechnologia
+,CDPROJEKT,PLOPTTC00011,Gry
+,CIGAMES,PLCTINT00018,Gry
+,CLNPHARMA,PLCLNPH00015,Produkcja leków
+,COGNOR,PLCNTSL00014,hutnictwo żelaza i stali
+,COMARCH,PLCOMAR00012,Systemy informatyczne
+,CREEPYJAR,PLCRPJR00019,Gry
+,CYFRPLSAT,PLCFRPT00013,Telekomunikacja
+,DATAWALK,PLPILAB00012,Oprogramowanie
+,DEVELIA,PLLCCRP00017,Sprzedaż nieruchomości
+,DINOPL,PLDINPL00011,Artykuły codziennego użytku
+,DOMDEV,PLDMDVL00012,Sprzedaż nieruchomości
+,ECHO,PLECHPS00019,Wynajem nieruchomości
+,ENTER,PLENTER00017,Transport
+,FERRO,PLFERRO00016,materiały budowlane
+,FORTE,PLFORTE00012,Meble i dywany
+,GRUPRACUJ,PLGRPRC00015,portale internetowe
+,HUUUGE,US44853H1086,Gry
+,INTERCARS,PLINTCS00010,Części samochodowe
+,KERNEL,LU0327357389,Żywność
+,KRUK,PLKRK0000010,Wierzytelności
+,LIVECHAT,PLLVTSF00010,Oprogramowanie
+,LPP,PLLPP0000011,Odzież i obuwie
+,MABION,PLMBION00016,Produkcja leków
+,MERCATOR,PLMRCTR00015,Sprzęt i materiały medyczne
+,MIRBUD,PLMRBUD00015,Budownictwo ogólne
+,MOBRUK,PLMOBRK00013,Recykling
+,NEUCA,PLTRFRM00018,Dystrybucja leków
+,NEWAG,PLNEWAG00012,Środki transportu
+,ONDE,PLONDE000018,energia odnawialna
+,OPONEO.PL,PLOPNPL00013,Handel internetowy
+,PCCROKITA,PLPCCRK00076,Chemia podstawowa
+,PCFGROUP,PLPCFGR00010,Oprogramowanie
+,PEP,PLPLSEP00013,Energetyka
+,PEPCO,NL0015000AU7,Odzież i obuwie
+,PKPCARGO,PLPKPCR00011,Transport
+,PLAYWAY,PLPLAYW00015,Gry
+,POLIMEXMS,PLMSTSD00019,budownictwo przemysłowe
+,R22,PLR220000018,Nowe technologie
+,RYVU,PLSELVT00013,Biotechnologia
+,SANOK,PLSTLSK00016,Części samochodowe
+,SELVITA,PLSLVCR00029,Biotechnologia
+,SNIEZKA,PLSNZKA00033,Oprogramowanie
+,STALEXP,PLSTLEX00019,Materiały budowlane
+,STALPROD,PLSTLPD00017,Hutnictwo żelaza i stali
+,STSHOLDING,PLSTSHL00012,rekreacja i wypoczynek - pozostałe
+,TIM,PLTIM0000016,Artykuły elektryczne
+,TORPOL,PLTORPL00016,Inżynieria lądowa i wodna
+,TSGAMES,PLTSQGM00016,Gry
+,UNIMOT,PLUNMOT00013,Dystrybucja paliw i gazu
+,VOTUM,PLVOTUM00016,Ubezpieczenia - pozostałe
+,VOXEL,PLVOXEL00014,Sprzęt i materiały medyczne
+,VRG,PLVSTLA00011,Odzież i obuwie
+,WAWEL,PLWAWEL00013,Żywność
+,XTB,PLXTRDM00011,Giełdy i biura maklerskie
+,ZEPAK,PLZEPAK00012,Energetyka
