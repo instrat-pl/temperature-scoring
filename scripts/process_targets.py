@@ -23,7 +23,15 @@ def process_targets(suffix=""):
             is_scope, f"base_year_ghg_{scope.lower()}"
         ] / df_azoty.loc[is_scope, ["base_year_ghg_s1", "base_year_ghg_s2"]].sum(axis=1)
     df_azoty = (
-        df_azoty.groupby(["company_name", "base_year", "end_year"])
+        df_azoty.groupby(
+            [
+                "company_name",
+                "base_year",
+                "end_year",
+                "base_year_ghg_s1",
+                "base_year_ghg_s2",
+            ]
+        )
         .agg({"reduction_ambition": "sum"})
         .reset_index()
     )
@@ -32,28 +40,43 @@ def process_targets(suffix=""):
 
     df = df[df["scope"].isin(["S1+S2", "S1+S2+S3"])]
 
-    df = df[["company_name", "reduction_ambition", "base_year", "end_year"]]
+    df["base_year_ghg_s1s2"] = df[["base_year_ghg_s1", "base_year_ghg_s2"]].sum(axis=1)
+    df = df[
+        [
+            "company_name",
+            "reduction_ambition",
+            "base_year",
+            "end_year",
+            "base_year_ghg_s1s2",
+        ]
+    ]
+
+    # Remove net-zero targets for S1+S2+S3 in the long term if there is already a medium/short term net-zero target for S1+S2
+    df = df.sort_values(["company_name", "end_year"])
+    df = df[~df[["company_name", "reduction_ambition"]].duplicated(keep="first")]
 
     # Assume there is one base year for all company's targets
     assert len(set(df["company_name"])) == len(
         set(df["company_name"] + df["base_year"].astype(str))
     )
 
-    df_base = df[["company_name", "base_year"]].drop_duplicates()
-    df_base["emissions"] = 1
+    df_base = df[["company_name", "base_year", "base_year_ghg_s1s2"]].drop_duplicates()
+
+    df_base["relative_emissions"] = 1
     df_base = df_base.rename(columns={"base_year": "year"})
 
-    df["emissions"] = (1 - df["reduction_ambition"]).round(2)
+    df["relative_emissions"] = (1 - df["reduction_ambition"]).round(2)
     df = df.rename(columns={"end_year": "year"})
     df = df.drop(columns=["base_year", "reduction_ambition"])
 
     df = pd.concat([df_base, df])
+    df["emissions"] = (df["relative_emissions"] * df["base_year_ghg_s1s2"]).round(2)
 
-    df = df.pivot(
-        index="year", columns="company_name", values="emissions"
-    ).reset_index()
-
-    df.to_csv(data_dir("clean", "reduction_targets.csv"), index=False)
+    for col in ["emissions", "relative_emissions"]:
+        df_res = df.pivot(
+            index="year", columns="company_name", values=col
+        ).reset_index()
+        df_res.to_csv(data_dir("clean", f"{col}_targets.csv"), index=False)
 
 
 if __name__ == "__main__":
