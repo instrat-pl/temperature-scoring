@@ -79,6 +79,83 @@ def process_targets(suffix=""):
         df_res.to_csv(data_dir("clean", f"{col}_targets.csv"), index=False)
 
 
+def append_historical_data_to_emission_targets():
+
+    df_targets = pd.read_csv(data_dir("clean", "emissions_targets.csv"))
+    companies = df_targets.columns[1:]
+    df_targets["type"] = "target"
+
+    df = pd.read_csv(data_dir("clean", "emission_data.csv"))
+    df = df[df["scope"] == "S1+S2"]
+    df = df[df["company_name"].isin(companies)]
+
+    years = [str(y) for y in range(2018, 2022)]
+    df = df.set_index("company_name")[years]
+    df.columns.name = "year"
+    df = df.transpose().reset_index()
+    df["year"] = df["year"].astype(int)
+    df["type"] = "historical"
+
+    df = pd.concat([df, df_targets])
+    df = df.melt(id_vars=["year", "type"], var_name="company", value_name="emissions")
+
+    df = df.sort_values(["year", "company"])
+    df = df[df["emissions"].notna()]
+    df["emissions"] = df["emissions"].round(0)
+
+    # Check if target and historical data is consistent
+    df_emissions = df.groupby(["year", "company"])["emissions"].mean().reset_index()
+
+    df = df.merge(
+        df_emissions, how="left", on=["year", "company"], suffixes=("", "_mean")
+    )
+
+    mismatch = df[df["emissions"] != df["emissions_mean"]].drop(
+        columns="emissions_mean"
+    )
+    if len(mismatch) > 0:
+        mismatch.to_csv("mismatch.csv", index=False)
+        print("There are some inconsistencies in S1+S2 emission data.")
+        print(mismatch)
+
+    df = df.groupby(["year", "company"])["emissions"].mean().round(0).reset_index()
+
+    df_pivot = df.pivot(
+        index="year", columns="company", values="emissions"
+    ).reset_index()
+    df_pivot.to_csv(data_dir("clean", "emission_targets_amended.csv"), index=False)
+
+    # Split into historical part and projection
+    df["projection"] = df["year"] > 2022
+
+    last_historical_rows = []
+    for company, subdf in df.groupby("company"):
+        last_row = subdf[~subdf["projection"]].iloc[-1:, :]
+        last_historical_rows.append(last_row)
+
+    df_last_historical = pd.concat(last_historical_rows)
+    df_last_historical["projection"] = True
+
+    df = pd.concat([df, df_last_historical]).sort_values("year")
+
+    df["column"] = df["company"]
+    df.loc[df["projection"], "column"] += " (proj.)"
+
+    df_pivot = df.pivot(
+        index="year", columns="column", values="emissions"
+    ).reset_index()
+
+    df_pivot.to_csv(
+        data_dir("clean", "emission_targets_amended_and_split.csv"), index=False
+    )
+
+    for col in df_pivot.set_index("year").columns:
+        if col.endswith("(proj.)"):
+            print(col)
+
+
 if __name__ == "__main__":
 
-    process_targets()
+    # process_targets()
+
+    append_historical_data_to_emission_targets()
