@@ -1,0 +1,5 @@
+,company_name,company_id,target_type,intensity_metric,scope,coverage_s1,coverage_s2,coverage_s3,reduction_ambition,base_year,end_year,start_year,base_year_ghg_s1,base_year_ghg_s2,base_year_ghg_s3,base_year_ghg_s1s2,ghg_s3_factor,base_year_ghg_s3_estimate,achieved_reduction,source_goals,source_emissions,comments,Inne gazy,emisje tylko co2,Metoda market based?
+5,KGHM,3.0,Absolute,,S1+S2,0.57,0.74,,0.19475806081669417,2020,2030,,2479173.0,2162120.05,,4641293.05,11.5,53374870.08,,https://kghm.com/pl/polityka-klimatyczna,https://kghm.com/pl/inwestorzy/centrum-wynikow/raporty-zintegrowane,"scope 3 zostanie udostępniony w 2024 roku i jest określany jako: 
+""emisje pośrednie w łańcuchu dostaw sprzętu, maszyn, części, materiałów eksploatacyjnych itp., 
+a także wynikające z realizacji usług czy podróży służbowych.""",Uwzględniane (CO2e),,
+14,PKN Orlen,8.0,Absolute,,S1+S2,0.0,0.0,,0.0,2020,2030,,17715216.0,1259736.0,81123571.0,18974952.0,,,,,,,,,

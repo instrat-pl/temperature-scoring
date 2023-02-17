@@ -30,6 +30,8 @@ def process_targets(suffix=""):
                 "end_year",
                 "base_year_ghg_s1",
                 "base_year_ghg_s2",
+                "coverage_s1",
+                "coverage_s2",
             ]
         )
         .agg({"reduction_ambition": "sum"})
@@ -41,6 +43,20 @@ def process_targets(suffix=""):
     df = df[df["scope"].isin(["S1+S2", "S1+S2+S3"])]
 
     df["base_year_ghg_s1s2"] = df[["base_year_ghg_s1", "base_year_ghg_s2"]].sum(axis=1)
+
+    reduced_coverage = (df["scope"] == "S1+S2") & (
+        df["coverage_s1"] * df["coverage_s2"] < 1
+    )
+    df.loc[reduced_coverage, "reduction_ambition"] *= (
+        df.loc[reduced_coverage, "coverage_s1"]
+        * df.loc[reduced_coverage, "base_year_ghg_s1"]
+        + df.loc[reduced_coverage, "coverage_s2"]
+        * df.loc[reduced_coverage, "base_year_ghg_s2"]
+    ) / df.loc[reduced_coverage, "base_year_ghg_s1s2"]
+
+    print(df[reduced_coverage].to_csv("df.csv"))
+    df = df[df["reduction_ambition"] > 0]
+
     df = df[
         [
             "company_name",
@@ -156,6 +172,5 @@ def append_historical_data_to_emission_targets():
 
 if __name__ == "__main__":
 
-    # process_targets()
-
+    process_targets()
     append_historical_data_to_emission_targets()

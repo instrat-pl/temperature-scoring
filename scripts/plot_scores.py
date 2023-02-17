@@ -131,6 +131,6 @@ if __name__ == "__main__":
 
     os.makedirs(plots_dir(), exist_ok=True)
 
+    # plot_temperature_scores("_example")
     plot_temperature_scores(use_revised_scores=True, aggregation_methods=["Average"])
     plot_temperature_scores("_with_estimates", aggregation_methods=["Average", "Emissions", "Revenue", "Market Cap"])
-    plot_temperature_scores("_example")

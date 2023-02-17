@@ -123,7 +123,7 @@ def calculate_score(
 
 if __name__ == "__main__":
 
-    calculate_score("_example")
+    # calculate_score("_example")
     calculate_score("", revised_combined_score=True)
     calculate_score(
         "_with_estimates",
